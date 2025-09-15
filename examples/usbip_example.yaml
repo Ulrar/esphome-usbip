@@ -1,0 +1,15 @@
+esphome:
+  name: usbip_example
+
+external_components:
+  - source: local
+    components: [usbip]
+
+logger:
+
+wifi:
+  ssid: "YOUR_SSID"
+  password: "YOUR_PASSWORD"
+
+usbip:
+  port: 3240
