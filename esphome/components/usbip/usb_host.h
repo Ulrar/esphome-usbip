@@ -44,6 +44,23 @@ class USBHostAdapter {
   // cached descriptor is available and copied into 'out'.
   virtual bool get_device_descriptor(void *client_ptr, std::vector<uint8_t> &out) = 0;
 
+  // Request the configuration descriptor for the client (asynchronous). The
+  // implementation may fetch it in segments and cache the full descriptor.
+  virtual void request_config_descriptor(void *client_ptr) = 0;
+
+  // Retrieve a cached configuration descriptor for a client. Returns true if
+  // a cached configuration descriptor is available and copied into 'out'.
+  virtual bool get_config_descriptor(void *client_ptr, std::vector<uint8_t> &out) = 0;
+
+  // Request a string descriptor (by index) for the client. Asynchronous;
+  // implementations should cache the raw string descriptor bytes when ready.
+  virtual void request_string_descriptor(void *client_ptr, int index) = 0;
+
+  // Retrieve a cached string descriptor for the client. Returns true if a
+  // cached descriptor is available and copied into 'out'. The returned data
+  // should be the raw USB string descriptor bytes (UTF-16LE encoded).
+  virtual bool get_string_descriptor(void *client_ptr, int index, std::vector<uint8_t> &out) = 0;
+
   // TODO: add methods to enumerate devices and submit transfers.
 };
 

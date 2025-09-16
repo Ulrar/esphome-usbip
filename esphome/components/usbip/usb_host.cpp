@@ -23,6 +23,16 @@ class DummyUSBHost : public USBHostAdapter {
     // Nothing to do for dummy; descriptor will be provided on get
   }
 
+  void request_config_descriptor(void *client_ptr) override {
+    (void)client_ptr;
+    // Dummy: no-op
+  }
+
+  void request_string_descriptor(void *client_ptr, int index) override {
+    (void)client_ptr; (void)index;
+    // Dummy: no-op
+  }
+
   bool get_device_descriptor(void *client_ptr, std::vector<uint8_t> &out) override {
     (void)client_ptr;
     // Return a minimal fake device descriptor (18 bytes)
@@ -44,6 +54,18 @@ class DummyUSBHost : public USBHostAdapter {
     };
     out.assign(desc, desc + sizeof(desc));
     return true;
+  }
+
+  bool get_config_descriptor(void *client_ptr, std::vector<uint8_t> &out) override {
+    (void)client_ptr;
+    out.clear();
+    return false;
+  }
+
+  bool get_string_descriptor(void *client_ptr, int index, std::vector<uint8_t> &out) override {
+    (void)client_ptr; (void)index;
+    out.clear();
+    return false;
   }
 };
 
@@ -74,8 +96,28 @@ class EspIdfUSBHost : public USBHostAdapter {
     // TODO: implement using ESP-IDF usb_host get descriptor APIs
   }
 
+  void request_config_descriptor(void *client_ptr) override {
+    (void)client_ptr;
+    // TODO: implement when ESP-IDF adapter is ready
+  }
+
+  void request_string_descriptor(void *client_ptr, int index) override {
+    (void)client_ptr; (void)index;
+    // TODO: implement when ESP-IDF adapter is ready
+  }
+
   bool get_device_descriptor(void *client_ptr, std::vector<uint8_t> &out) override {
     (void)client_ptr;
+    return false;
+  }
+
+  bool get_config_descriptor(void *client_ptr, std::vector<uint8_t> &out) override {
+    (void)client_ptr;
+    return false;
+  }
+
+  bool get_string_descriptor(void *client_ptr, int index, std::vector<uint8_t> &out) override {
+    (void)client_ptr; (void)index;
     return false;
   }
 };

@@ -18,6 +18,7 @@ CONF_USB_HOST = 'usb_host'
 CONFIG_SCHEMA = cv.Schema({
     cv.GenerateID(): cv.declare_id(USBIPComponent),
     cv.Optional(CONF_PORT, default=3240): cv.port,
+    cv.Optional('string_wait_ms', default=2000): cv.Any(cv.positive_time_period_milliseconds, cv.positive_int),
     cv.Optional(CONF_USB_HOST): cv.use_id(USBHost),
     cv.Optional('clients'): cv.ensure_list(cv.use_id(USBClient)),
 }).extend(cv.COMPONENT_SCHEMA)
@@ -38,3 +39,5 @@ async def to_code(config):
     for c in config.get('clients') or ():
         client = await cg.get_variable(c)
         cg.add(var.add_exported_client(client))
+    if 'string_wait_ms' in config:
+        cg.add(var.set_string_wait_ms(config['string_wait_ms']))

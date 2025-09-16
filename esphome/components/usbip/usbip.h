@@ -5,6 +5,7 @@
 #include <memory>
 #include "usb_host.h"
 #include <vector>
+#include <unordered_map>
 
 namespace esphome {
 namespace usbip {
@@ -19,6 +20,9 @@ class USBIPComponent : public Component {
 
   // configuration
   void set_port(uint16_t port) { port_ = port; }
+  // How long (ms) to wait for string descriptor fetches when responding to
+  // an OP_REQ_DEVLIST. Exposed so codegen can set from YAML.
+  void set_string_wait_ms(uint32_t ms) { string_wait_ms_ = ms; }
 
   // Inject a USB host adapter (ownership transferred). If not set, the
   // component will not attempt to access USB host functionality.
@@ -53,6 +57,34 @@ class USBIPComponent : public Component {
   void request_client_descriptors();
   // Try to update cached descriptors (non-blocking)
   void update_client_descriptors();
+
+  // How long (ms) to wait for string descriptor fetches when responding to
+  // an OP_REQ_DEVLIST before finishing the reply. Small values reduce
+  // latency but may result in missing human-readable names in the first
+  // response.
+
+  // State for non-blocking OP_REQ_DEVLIST handling: when an OP_REQ_DEVLIST is
+  // received we request descriptors asynchronously and finish the reply in
+  // subsequent loop() calls when descriptors are ready or timeout expires.
+  bool pending_devlist_{false};
+  // Millis deadline when pending devlist should be completed regardless
+  uint32_t pending_devlist_deadline_{0};
+
+  // How long to wait for string descriptors during a pending devlist
+  // operation (see set_string_wait_ms()).
+  uint32_t string_wait_ms_{2000};
+
+  // Non-blocking send buffer/state used to stream OP_REP_DEVLIST replies
+  // across multiple loop() iterations so we never block the main loop.
+  std::vector<uint8_t> send_buf_{};
+  size_t send_offset_{0};
+  bool sending_devlist_{false};
+
+  // Per-client map of last time (ms) we attempted to request a string
+  // descriptor for a given index. This avoids hammering the USB host.
+  std::vector<std::unordered_map<int, uint32_t>> last_string_request_ms_{};
+  // Minimum ms between retry attempts for the same string index
+  uint32_t string_request_interval_ms_{200};
 };
 
 }  // namespace usbip
